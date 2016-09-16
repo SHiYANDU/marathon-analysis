@@ -145,7 +145,6 @@ class Run(object):
         "half ironman": 21.1, #NOTE a 70.3 is  ahalf marathon
         "sprint triathlon": 5,
         "olympic triathlon": 10,
-
     }
 
     def get_distance_from_type(self, type_label):
@@ -156,8 +155,8 @@ class Run(object):
             if d is not None:
                 d = float(d)
             return d
-        elif type_label in run_distances:
-            return  float(run_distances[type_label])
+        elif type_label in self.run_distances:
+            return  float(self.run_distances[type_label])
         else:
             return None
 
