@@ -13,8 +13,8 @@ For participation:
 - sequence of races
 
 For finishing time:
-- Trend of finishing times (Amiel)
-- average speed (for runs only)
+- Trend of finishing times 
+- average speed (for runs only) (Brendan)
 - average distance 
 - age
 
@@ -22,7 +22,7 @@ For finishing time:
 ### Things to investigate
 
 - Do people who run Ottawa also run Montreal
-- Look for anomolies, investigate potential new features (Amiel)
+- Look for anomolies, investigate potential new features (Amiel) (weather, on grass etc)
 - check if sex makes a difference
 
 ### Timeline
