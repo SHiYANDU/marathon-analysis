@@ -4,9 +4,9 @@
 Features can be implemented independently as methods on the `Run` and `Runner`.
 
 For participation:
-- Experience metric
+- Experience metric (Brendan)
 - Age: An estimate based on category and event date (Amiel)
-- Penalize sailing, mud runs
+- Penalize sailing, mud runs (Brendan)
 - Average distance run
 - If they usually finished but didn't finish last years (Amiel)
 - Number of races of any kind. People who do more races seem to be more likely to compete in this one
