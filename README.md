@@ -13,7 +13,7 @@ For participation:
 - sequence of races
 
 For finishing time:
-- Trend of finishing times
+- Trend of finishing times (Amiel)
 - average speed (for runs only)
 - average distance 
 - age
