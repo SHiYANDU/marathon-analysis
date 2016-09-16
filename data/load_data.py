@@ -10,13 +10,15 @@ DATA_FILEPATH = 'Project1_data.csv'
 def group_events(row):
     # turn each row into a list of lists where each sublist is:
     #    ['EVENT DATE', 'EVENT NAME', 'EVENT TYPE', 'TIME', 'CATEGORY']
-    return zip(*map(lambda i: row[1+i::5], range(5)))
+    return zip(*map(lambda i: row[1+i::5], range(5))) #lambda grabs the next 5 elements from the list
+
+    #I THINK THIS IS WRONG. I DON'T THINK WE CAN MAKE THe ASSUMPTION IT IS ONLy TH ENEXT 5 ELEMENTS. Oh nvm it maps them
 
 def load_data(outfile, write_runs, write_runners, filters={}):
     with open(DATA_FILEPATH, 'r') as f:
-        data = list(csv.reader(f))[1:]
+        data = list(csv.reader(f))[1:] #ignores the first line
 
-    data = [Runner(row) for row in data]
+    data = [Runner(row) for row in data] #make a runner object for each row in data
 
     if filters is not None:
         for func in filters:
@@ -47,14 +49,14 @@ def make_date_filter(date):
 # a quick analysis of the event types showed a few frequent
 # types which were the same with different labels.
 #  For example: "10KM", "10 km", "10 k"
-#  to recify this, everything was converted to lower case and 
+#  to recify this, everything was converted to lower case and
 #  these examples, the following regex is used
 #   s/\s?km?/km/
 #
 # before any fixing, there were 574 types
 # adding lowercase reduced this to 512 types
 # using the regex above brought it down to 469 types
-# 
+#
 # A couple more rules that each conflate a couple labels:
 #    s/demi/half/
 #    s/-/ /
@@ -71,18 +73,22 @@ def fix_type_label(label):
         '  ': ' ',
         'full marathon': 'marathon',
         'run': '',
+        'olympique': 'olympic',
         re.compile('(^\s+|\s+$)'): '',
     }
-
+#last thing I don't understand.
+#
     return reduce(
             lambda s, rule: re.sub(rule[0], rule[1], s),
             rules.iteritems(),
             label.lower())
 
+#on the first pass, it takes the label, and runs through the lambda on it. Then it does it again. and so on
+
 class Runner(object):
 
     # input: row (row from the raw data)
-    # Initializes the following fields 
+    # Initializes the following fields
     #   uid: unique ID
     #   gender: TODO
     #   age: TODO maybe we can estimate age based on categories in runs?
@@ -92,6 +98,7 @@ class Runner(object):
 
         labels = ['date','name','type','time','category']
 
+        #grou events creates a list of the events each runner has run in, which is a bit confusing imo. So group_events creates a list of lists of each event, and then labels each. I guess that makes sense.i Each runner has a bunch of dicts. Events is a series of run objects
         events = map(lambda event: dict(zip(labels,event)), group_events(row))
         self.events = [Run(self,**event) for event in events]
 
@@ -110,7 +117,7 @@ class Run(object):
     #        data: kwargs containing --
     #           date, name, type, time, category
     def __init__(self, runner, **data):
-        type_label = fix_type_label(data['type']) 
+        type_label = fix_type_label(data['type'])
 
         self.runner = runner
         self.runner_uid = runner.uid
@@ -128,6 +135,19 @@ class Run(object):
                        hours=time.hour, minutes=time.minute, seconds=time.second)
 
     distance_re = re.compile('(?P<dist>\d+(\.\d+)?)km')
+
+    run_distances = {
+        "marathon": 42.195,
+        "half marathon": 21.0975,
+        "sprint duathlon": 7.5,
+        "duathlon":  15,
+        "ironman": 42.220,
+        "half ironman": 21.1, #NOTE a 70.3 is  ahalf marathon
+        "sprint triathlon": 5,
+        "olympic triathlon": 10,
+
+    }
+
     def get_distance_from_type(self, type_label):
         #TODO: update with marathon and half marathon
         match = self.distance_re.match(type_label)
@@ -136,6 +156,8 @@ class Run(object):
             if d is not None:
                 d = float(d)
             return d
+        elif type_label in run_distances:
+            return  float(run_distances[type_label])
         else:
             return None
 
@@ -161,7 +183,7 @@ if __name__ == "__main__":
     parser.add_argument('-d','--date', type=str,
                 default='2015-01-01',
                 help="A date to cut off data as a training set YYYY-MM-DD. e.g. 2015-01-01 will not include any running data from after 2015")
-    parser.add_argument('-run','--run_data', help="write run data", 
+    parser.add_argument('-run','--run_data', help="write run data",
             action="store_true")
     parser.add_argument('-runner','--runner_data',help="write runner data",
             action="store_true")
