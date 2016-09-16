@@ -5,10 +5,10 @@ Features can be implemented independently as methods on the `Run` and `Runner`.
 
 For participation:
 - Experience metric
-- Age: An estimate based on category and event date
+- Age: An estimate based on category and event date (Amiel)
 - Penalize sailing, mud runs
 - Average distance run
-- If they usually finished but didn't finish last years
+- If they usually finished but didn't finish last years (Amiel)
 - Number of races of any kind. People who do more races seem to be more likely to compete in this one
 - sequence of races
 
@@ -22,7 +22,7 @@ For finishing time:
 ### Things to investigate
 
 - Do people who run Ottawa also run Montreal
-- Look for anomolies, investigate potential new features
+- Look for anomolies, investigate potential new features (Amiel)
 - check if sex makes a difference
 
 ### Timeline
