@@ -38,4 +38,14 @@ Over the weekend
 Cross validation doesn't make sense because of the chronology of the data.
 
 
+### Using the load data script
+
+The script takes a required 'outfile' parameter which is the prefix all output
+csvs will have. optional arguments are as follows
+
+* `-d` or `--date`: The date after which to not include data (to make a testing set). Format is yyyy-mm-dd. Default is 2015-01-01.
+* `-run` or `--run_data`: if this flag is present, event data is written
+* `-runner` or `--runner_data`: if this flag is present, runner data is written
+* `-t` or `--types`: specify the types of events you want to write. For example `-t marathon 'half marathon'` will write a CSV only with data from marathons and half marathons. If this flag is absent, then data from all types is written.
+
 
