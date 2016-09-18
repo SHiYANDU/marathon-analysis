@@ -1,6 +1,8 @@
 # script to take in the format provided by the project
 # clean it up a little and load it into a usable OO format
 
+from __future__ import division
+
 import argparse, csv, re
 from collections import Counter
 from datetime import datetime, timedelta
@@ -43,6 +45,13 @@ def make_date_filter(date):
     date = datetime.strptime(date, '%Y-%m-%d')
     def f(run):
         return run.date < date
+
+    return f
+
+def make_type_filter(types):
+
+    def f(run):
+        return run.event_type in types
 
     return f
 
@@ -129,7 +138,7 @@ class Runner(object):
         min_age = 0
         max_age = float('inf')
         for event in self.events:
-            years_ago = (race_date - event.date).days / 365
+            years_ago = (race_date - event.date).days // 365
             category = self.category_re.match(event.category)
             if not category:
                 continue
@@ -151,13 +160,15 @@ class Runner(object):
         elif max_age == float('inf'):
             return min_age
         else:
-            return (min_age + max_age) / 2
+            return (min_age + max_age) // 2
 
     def get_sex(self):
         sexs = map(lambda x: x[0], [e.category for e in self.events if e.category])
         # make sure we're not picking up a 'N' from NO AGE, or something
         sex = reduce(lambda c, n: n if n in ['M','H','F'] else c, sexs, None)
         return 'M' if sex == 'H' else sex
+
+    
 
 
 class Run(object):
@@ -179,13 +190,17 @@ class Run(object):
             self.finished = False
             self.time = None
         else:
+            self.finished = True
             time = datetime.strptime(data['time'], '%H:%M:%S')
             self.time = timedelta(
                        hours=time.hour, minutes=time.minute, seconds=time.second)
 
     distance_re = re.compile('(?P<dist>\d+(\.\d+)?)km')
     def get_distance_from_type(self, type_label):
-        #TODO: update with marathon and half marathon
+        if self.event_type == 'marathon':
+            return 42.2
+        if self.event_type == 'half marathon':
+            return 21.1
         match = self.distance_re.match(type_label)
         if match is not None:
             d = match.groups()[0]
@@ -221,12 +236,17 @@ if __name__ == "__main__":
             action="store_true")
     parser.add_argument('-runner','--runner_data',help="write runner data",
             action="store_true")
+    parser.add_argument('-t', '--types', help="which types of event to include, defaults to all types",
+            nargs='+')
 
     args = parser.parse_args()
 
     date_filter = make_date_filter(args.date)
+    filters = [date_filter]
+    if args.types:
+        filters.append(make_type_filter(args.types))
 
-    load_data(args.outfile, args.run_data, args.runner_data, filters=[date_filter])
+    load_data(args.outfile, args.run_data, args.runner_data, filters=filters)
 
 
 
