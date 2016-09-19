@@ -35,7 +35,7 @@ def load_data(outfile, write_runs, write_runners, filters={}):
         with open(outfile + '_runners.csv', 'w+') as f:
             # TODO update once more features are added
 
-            f.write('RUNNER,AGE,GENDER,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED\n')
+            f.write('RUNNER,AGE,GENDER,RAN_2011,RAN_2012,RAN_2013,RAN_2014,RAN_2015,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED\n')
             for runner in data:
                 f.write(str(runner)+'\n')
 
@@ -146,15 +146,37 @@ class Runner(object):
 
         labels = ['date','name','type','time','category']
 
-        #grou events creates a list of the events each runner has run in, which is a bit confusing imo. So group_events creates a list of lists of each event, and then labels each. I guess that makes sense.i Each runner has a bunch of dicts. Events is a series of run objects
         events = map(lambda event: dict(zip(labels,event)), group_events(row))
 
-        #OPTIMIZE THIS SO ITS ALL IN ONE LOOP.
         self.events = [Run(self,**event) for event in events]
         distances = [run.distance for run in self.events]
         speeds = [run.avg_run_speed for run in self.events]
         genders = [run.gender for run in self.events]
         ages = [run.avg_age for run in self.events]
+
+        distances = []
+        speeds = []
+        genders = []
+        ages = []
+        years_ran = {
+        '2011': 0,
+        '2012': 0,
+        '2013': 0,
+        '2014': 0,
+        '2015': 0
+        }
+
+        for run in self.events:
+            speeds.append(run.avg_run_speed)
+            distances.append(run.distance)
+            genders.append(run.gender)
+            ages.append(run.avg_age)
+            if str(run.year) in years_ran.keys():
+                years_ran[str(run.year)] +=1
+
+
+
+
         self.total_distance = sum(distances)
         self.performance_metric = sum(map(self.performance_function, distances))
         self.num_events= len(self.events)
@@ -163,6 +185,11 @@ class Runner(object):
         self.gender = sum(genders)/self.num_events
         self.avg_avg_age = sum(ages)/self.num_events
 
+        self.ran_in_2011 = 1 if years_ran['2011'] > 0 else 0
+        self.ran_in_2012 = 1 if years_ran['2012'] > 0 else 0
+        self.ran_in_2013 = 1 if years_ran['2013'] > 0 else 0
+        self.ran_in_2014 = 1 if years_ran['2014'] > 0 else 0
+        self.ran_in_2015 = 1 if years_ran['2015'] > 0 else 0
 
 
     def performance_function(self, element):
@@ -172,7 +199,7 @@ class Runner(object):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},{age},{gender},{event_count},{avg_distance},{tot_distance},{perf},{avg_speed}'.format(
+        return '{uid},{age},{gender},{ran_2011},{ran_2012},{ran_2013},{ran_2014},{ran_2015},{event_count},{avg_distance},{tot_distance},{perf},{avg_speed}'.format(
                 age=self.avg_avg_age,
                 gender=self.gender,
                 uid=self.uid,
@@ -180,7 +207,12 @@ class Runner(object):
                 avg_distance = self.avg_dist,
                 tot_distance = self.total_distance,
                 perf = self.performance_metric,
-                avg_speed = self.avg_speed
+                avg_speed = self.avg_speed,
+                ran_2011 = self.ran_in_2011,
+                ran_2012 = self.ran_in_2012,
+                ran_2013 = self.ran_in_2013,
+                ran_2014 = self.ran_in_2014,
+                ran_2015 = self.ran_in_2015,
             )
 
 class Run(object):
@@ -196,6 +228,7 @@ class Run(object):
         self.name = data['name']
         self.event_type = type_label
         self.date = datetime.strptime(data['date'], '%Y-%m-%d')
+        self.year = self.date.year
         self.distance = self.get_distance_from_type(type_label)
         self.time = None
         self.finished = False
@@ -255,7 +288,7 @@ class Run(object):
         return "<Run: {runner_uid} - {name} ({event_type})>".format(**self.__dict__)
 
     def __str__(self):
-        return "{uid},{name},{avg_age},{gender},{etype},{date},{distance},{category},{avg_speed}".format(
+        return "{uid},{name},{avg_age},{gender},{etype},{date},{year},{distance},{category},{avg_speed}".format(
                 uid=self.runner_uid,
                 name=self.name,
                 avg_age=self.age,
@@ -264,7 +297,10 @@ class Run(object):
                 date=self.date.strftime('%Y-%m-%d'),
                 distance=str(self.distance) if self.distance else 'N/A',
                 category=self.category,
-                avg_speed = self.avg_run_speed)
+                avg_speed = self.avg_run_speed,
+                year = self.year,
+                )
+
 
 
 if __name__ == "__main__":
