@@ -34,7 +34,8 @@ def load_data(outfile, write_runs, write_runners, filters={}):
     if write_runners:
         with open(outfile + '_runners.csv', 'w+') as f:
             # TODO update once more features are added
-            f.write('RUNNER,AGE,GENDER,EVENT COUNT\n')
+
+            f.write('RUNNER,AGE,GENDER,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED\n')
             for runner in data:
                 f.write(str(runner)+'\n')
 
@@ -84,6 +85,52 @@ def fix_type_label(label):
             rules.iteritems(),
             label.lower())
 
+def split_gender_and_age(category):
+    rules = {
+        ' ': '',
+         re.compile('.*\+.*$'):'N/A', #anything plus becomes hard to bin
+         re.compile('m '): 'm',
+         re.compile('f '): 'f',
+         'maitre': '',
+         ',': '-',
+
+
+    }
+    cleaned = reduce(
+            lambda s, rule: re.sub(rule[0], rule[1], s),
+            rules.iteritems(),
+            category.lower())
+
+
+    if cleaned is "N/A" or cleaned is '':
+        return [-1, -1]
+
+    age = bin_age(cleaned)
+    gender = get_gender(cleaned)
+
+    return[age, gender]
+
+
+def get_gender(cleaned):
+
+    if "f" in cleaned:
+        return 1
+
+    elif "m" in cleaned:
+        return 0
+    else:
+        return -1
+
+def bin_age(cleaned): #take upper number
+    arange = cleaned[1:].split('-')
+    print(arange)
+    if (len(arange) is 1) or (len(arange) is 0) or '' in arange or len(arange[0]) > 2 or len(arange[1]) >2:
+        return -1
+
+    else:
+        return (int(arange[0]) + int(arange[1]))/ 2
+
+
 #on the first pass, it takes the label, and runs through the lambda on it. Then it does it again. and so on
 
 class Runner(object):
@@ -101,13 +148,21 @@ class Runner(object):
 
         #grou events creates a list of the events each runner has run in, which is a bit confusing imo. So group_events creates a list of lists of each event, and then labels each. I guess that makes sense.i Each runner has a bunch of dicts. Events is a series of run objects
         events = map(lambda event: dict(zip(labels,event)), group_events(row))
-        self.events = [Run(self,**event) for event in events]
 
+        #OPTIMIZE THIS SO ITS ALL IN ONE LOOP.
+        self.events = [Run(self,**event) for event in events]
         distances = [run.distance for run in self.events]
+        speeds = [run.avg_run_speed for run in self.events]
+        genders = [run.gender for run in self.events]
+        ages = [run.avg_age for run in self.events]
         self.total_distance = sum(distances)
         self.performance_metric = sum(map(self.performance_function, distances))
         self.num_events= len(self.events)
         self.avg_dist = self.total_distance/self.num_events
+        self.avg_speed = sum(speeds)/self.num_events
+        self.gender = sum(genders)/self.num_events
+        self.avg_avg_age = sum(ages)/self.num_events
+
 
 
     def performance_function(self, element):
@@ -117,12 +172,15 @@ class Runner(object):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},N/A,N/A,{event_count},{avg_distance},{tot_distance},{perf}'.format(
+        return '{uid},{age},{gender},{event_count},{avg_distance},{tot_distance},{perf},{avg_speed}'.format(
+                age=self.avg_avg_age,
+                gender=self.gender,
                 uid=self.uid,
                 event_count=self.num_events,
                 avg_distance = self.avg_dist,
                 tot_distance = self.total_distance,
-                perf = self.performance_metric
+                perf = self.performance_metric,
+                avg_speed = self.avg_speed
             )
 
 class Run(object):
@@ -141,7 +199,9 @@ class Run(object):
         self.distance = self.get_distance_from_type(type_label)
         self.time = None
         self.finished = False
-        self.category = data['category']
+        self.category = split_gender_and_age(data['category'])
+        self.avg_age = self.category[0]
+        self.gender = self.category[1]
         #if data['time'] == '-1':
         self.finished = False
         if data['time'] != '-1':
@@ -195,9 +255,11 @@ class Run(object):
         return "<Run: {runner_uid} - {name} ({event_type})>".format(**self.__dict__)
 
     def __str__(self):
-        return "{uid},{name},{etype},{date},{distance},{category},{avg_speed}".format(
+        return "{uid},{name},{avg_age},{gender},{etype},{date},{distance},{category},{avg_speed}".format(
                 uid=self.runner_uid,
                 name=self.name,
+                avg_age=self.age,
+                gender = self.gender,
                 etype=self.event_type,
                 date=self.date.strftime('%Y-%m-%d'),
                 distance=str(self.distance) if self.distance else 'N/A',
@@ -231,3 +293,5 @@ if __name__ == "__main__":
 #2. remove all non runs. sort of done
 #4. do naive bayes
 #   http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html - depends on agegroup
+#add gender, age
+# bin age by every 5 years. if you aged out, we can have another feature.
