@@ -41,15 +41,19 @@ class Runner(object):
         self.age = self.get_age()
         self.sex = self.get_sex()
 
+
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},{sex},{age},{event_count}'.format(
+        return '{uid},{sex},{age},{event_count},{avg_dist},{run_ratio},{time_weight}'.format(
                 uid=self.uid,
                 sex=self.sex,
                 age=self.age,
-                event_count=len(self.events)
+                event_count=len(self.events),
+                avg_dist=self.get_avg_dist(),
+                run_ratio=self.get_run_ratio(),
+                time_weight=self.get_race_timeweight()
             )
 
     # attempts to estimate the age of the runner based on categories 
@@ -88,4 +92,39 @@ class Runner(object):
         # make sure we're not picking up a 'N' from NO AGE, or something
         sex = reduce(lambda c, n: n if n in ['M','H','F'] else c, sexs, None)
         return 'M' if sex == 'H' else sex
-
+    
+    def get_avg_dist(self):
+#         get average distance of all running 
+        sum=0.0
+        non_run_event=0.0
+        for event in self.events:
+            if isinstance(event.distance,float):
+                sum+=event.distance
+            else:
+                non_run_event+=1
+        if sum==0:
+            return None
+        else:
+            return sum/(len(self.events)-non_run_event)
+            
+    def get_run_ratio(self):
+#         return the proportion of running events 
+        non_run_event=0.0
+        for event in self.events:
+            if not isinstance(event.distance,float):
+                non_run_event+=1
+        return (len(self.events)-non_run_event)/len(self.events)
+    
+    def get_race_timeweight(self):
+        #average time distance of races
+        time_to_evaluate=2015.0
+        timeweight=0.0
+        error=0.0
+        for event in self.events:
+            if isinstance(event.date.year,int):
+                timeweight+=(time_to_evaluate-event.date.year)
+            else:
+                error+=1
+        return timeweight/(len(self.events)-error)
+    
+    
