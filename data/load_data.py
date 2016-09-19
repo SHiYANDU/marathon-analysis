@@ -230,5 +230,4 @@ if __name__ == "__main__":
 #TODO
 #2. remove all non runs. sort of done
 #4. do naive bayes
-#5. average speed - ? investigate what percentage of ironman times are running.
 #   http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html - depends on agegroup
