@@ -74,6 +74,7 @@ def fix_type_label(label):
         'full marathon': 'marathon',
         'run': '',
         'olympique': 'olympic',
+         re.compile('.*70\.3.*$'):'half ironman',
         re.compile('(^\s+|\s+$)'): '',
     }
 #last thing I don't understand.
@@ -102,13 +103,23 @@ class Runner(object):
         events = map(lambda event: dict(zip(labels,event)), group_events(row))
         self.events = [Run(self,**event) for event in events]
 
+        distances = [run.distance for run in self.events]
+        self.total_distance = sum(distances)
+        self.performance_metric = sum(map(self.performance_function, distances))
+
+
+    def performance_function(self, element):
+        return element**2
+
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},N/A,N/A,{event_count}'.format(
+        return '{uid},N/A,N/A,{event_count},{tot_distance},{perf}'.format(
                 uid=self.uid,
-                event_count=len(self.events)
+                event_count=len(self.events),
+                tot_distance = self.total_distance,
+                perf = self.performance_metric
             )
 
 class Run(object):
@@ -142,7 +153,7 @@ class Run(object):
         "sprint duathlon": 7.5,
         "duathlon":  15,
         "ironman": 42.220,
-        "half ironman": 21.1, #NOTE a 70.3 is  ahalf marathon
+        "half ironman": 21.1, #NOTE a 70.3 is  ahalf marathon# all 70.3 go to half ironman. contains half and ironman, half ironman etc
         "sprint triathlon": 5,
         "olympic triathlon": 10,
     }
@@ -155,10 +166,10 @@ class Run(object):
             if d is not None:
                 d = float(d)
             return d
-        elif type_label in self.run_distances:
-            return  float(self.run_distances[type_label])
+        elif type_label.lower() in self.run_distances:
+            return  float(self.run_distances[type_label.lower()])
         else:
-            return None
+            return 1
 
     def __repr__(self):
         return "<Run: {runner_uid} - {name} ({event_type})>".format(**self.__dict__)
@@ -195,3 +206,10 @@ if __name__ == "__main__":
 
 
 
+#TODO
+#1. add total distance feature
+#2. remove all non runs. sort of done
+#3. add performance metricc.
+#4. do naive bayes
+#5. average speed - ? investigate what percentage of ironman times are running.
+#   http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html - depends on agegroup
