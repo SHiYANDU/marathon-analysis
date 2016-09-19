@@ -48,4 +48,25 @@ csvs will have. optional arguments are as follows
 * `-runner` or `--runner_data`: if this flag is present, runner data is written
 * `-t` or `--types`: specify the types of events you want to write. For example `-t marathon 'half marathon'` will write a CSV only with data from marathons and half marathons. If this flag is absent, then data from all types is written.
 
+### Feature list
+- Gender
+- Age (Amiel to investigate and potentially throw away unbounded intervals)
+- Inclusion columns (ran at all in a year)
+- Avg distance
+    - with and without running events
+- Total distance (and total distance squared)
+- Avg speed
+- Ratio of running events to non-running
+- Set to zero mean
+- Did you run race X? (how to express?)
+
+
+### TODOs:
+- Update load data to allow you to specify which features to write.
+- 20 Test set
+- k = 10 random splits
+
+
+
+
 
