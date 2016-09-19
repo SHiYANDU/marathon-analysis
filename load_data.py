@@ -33,7 +33,7 @@ def load_data(outfile, write_runs, write_runners, filters={}):
     if write_runners:
         with open(outfile + '_runners.csv', 'w+') as f:
             # TODO update once more features are added
-            f.write('RUNNER,GENDER,AGE,EVENT COUNT\n')
+            f.write('RUNNER,GENDER,AGE,EVENT COUNT,AVG_DIST,RUN_RATIO,TIME_WEIGHT\n')
             for runner in data:
                 # don't write runners whose data was all filtered out:
                 if len(runner.events) > 0:
