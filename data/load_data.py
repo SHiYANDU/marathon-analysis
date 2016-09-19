@@ -106,6 +106,8 @@ class Runner(object):
         distances = [run.distance for run in self.events]
         self.total_distance = sum(distances)
         self.performance_metric = sum(map(self.performance_function, distances))
+        self.num_events= len(self.events)
+        self.avg_dist = self.total_distance/self.num_events
 
 
     def performance_function(self, element):
@@ -115,9 +117,10 @@ class Runner(object):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},N/A,N/A,{event_count},{tot_distance},{perf}'.format(
+        return '{uid},N/A,N/A,{event_count},{avg_distance},{tot_distance},{perf}'.format(
                 uid=self.uid,
-                event_count=len(self.events),
+                event_count=self.num_events,
+                avg_distance = self.avg_dist,
                 tot_distance = self.total_distance,
                 perf = self.performance_metric
             )
@@ -136,17 +139,33 @@ class Run(object):
         self.event_type = type_label
         self.date = datetime.strptime(data['date'], '%Y-%m-%d')
         self.distance = self.get_distance_from_type(type_label)
+        self.time = None
+        self.finished = False
         self.category = data['category']
-        if data['time'] == '-1':
-            self.finished = False
-            self.time = None
-        else:
+        #if data['time'] == '-1':
+        self.finished = False
+        if data['time'] != '-1':
+            self.finished = True
+        #else:
             time = datetime.strptime(data['time'], '%H:%M:%S')
             self.time = timedelta(
                        hours=time.hour, minutes=time.minute, seconds=time.second)
 
-    distance_re = re.compile('(?P<dist>\d+(\.\d+)?)km')
+        self.avg_run_speed = self.get_avg_speed_from_type(type_label)
 
+
+    def get_avg_speed_from_type(self, type_label):
+    #TODO: are we only going to make this count for marathon distances? I think so
+    # http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html
+    # We can determine which portion of the time is devoted to the speed
+        if self.time== None:
+            return 0
+        else:
+            return (self.distance*1000)/(self.time.total_seconds())
+
+
+
+    distance_re = re.compile('(?P<dist>\d+(\.\d+)?)km')
     run_distances = {
         "marathon": 42.195,
         "half marathon": 21.0975,
@@ -160,6 +179,7 @@ class Run(object):
 
     def get_distance_from_type(self, type_label):
         #TODO: update with marathon and half marathon
+        self.time = 0
         match = self.distance_re.match(type_label)
         if match is not None:
             d = match.groups()[0]
@@ -175,13 +195,14 @@ class Run(object):
         return "<Run: {runner_uid} - {name} ({event_type})>".format(**self.__dict__)
 
     def __str__(self):
-        return "{uid},{name},{etype},{date},{distance},{category}".format(
+        return "{uid},{name},{etype},{date},{distance},{category},{avg_speed}".format(
                 uid=self.runner_uid,
                 name=self.name,
                 etype=self.event_type,
                 date=self.date.strftime('%Y-%m-%d'),
                 distance=str(self.distance) if self.distance else 'N/A',
-                category=self.category)
+                category=self.category,
+                avg_speed = self.avg_run_speed)
 
 
 if __name__ == "__main__":
@@ -207,9 +228,7 @@ if __name__ == "__main__":
 
 
 #TODO
-#1. add total distance feature
 #2. remove all non runs. sort of done
-#3. add performance metricc.
 #4. do naive bayes
 #5. average speed - ? investigate what percentage of ironman times are running.
 #   http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html - depends on agegroup
