@@ -99,12 +99,8 @@ class Runner(object):
                 else:
                     max_age = min(max_age, bound + years_ago)
 
-        if min_age == 0 and max_age == float('inf'):  # we didn't find any usable data
+        if min_age == 0 or max_age == float('inf'):  # we didn't find any usable data
             return None
-        elif min_age == 0:
-            return max_age
-        elif max_age == float('inf'):
-            return min_age
         else:
             return (min_age + max_age) // 2
 
@@ -147,7 +143,6 @@ class Runner(object):
             else:
                 error+=1
         return timeweight/(len(self.events)-error)
-
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
 
@@ -170,3 +165,5 @@ class Runner(object):
                 ran_2015 = self.ran_in_2015,
 
             )
+
+
