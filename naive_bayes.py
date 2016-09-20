@@ -39,7 +39,7 @@ def load_data(outfile, class_type):
 
 
     if class_type is "gaussian":
-
+        return 0
     #RUNNER,AGE,GENDER,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED
     #id, discrete, discrete, discrete, continuous, continuous, continuous, continuous
 
