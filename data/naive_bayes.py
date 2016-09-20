@@ -22,6 +22,7 @@
 #function for the mean
 
 import argparse, csv, re
+import numpy as np
 from collections import Counter
 from datetime import datetime, timedelta
 
@@ -33,6 +34,9 @@ def load_data(outfile, class_type):
 
     feature_names = data[0]
     feature_vals = data[1:]
+    feature_matrix = np.asarray[feature_vals]
+    continuous = 8
+
 
     if class_type is "gaussian":
 
@@ -40,25 +44,32 @@ def load_data(outfile, class_type):
     #id, discrete, discrete, discrete, continuous, continuous, continuous, continuous
 
 
-def gaussian_classification():
+def gaussian_classification(row, feature_to_predict):
+    # for every single, calculate teh prob they run in 2016
+    #Then, the probability distribution of v {\displaystyle v} v given a class c {\displaystyle c} c, p ( x = v | c ) {\displaystyle p(x=v|c)} p(x=v|c), can be computed by plugging v {\displaystyle v} v into the equation for a Normal distribution parameterized by μ c {\displaystyle \mu _{c}} \mu _{c} and σ c 2 {\displaystyle \sigma _{c}^{2}} \sigma^2_c. T
 
-    return 0
+
+    return 1 #if they will
+
+#DO BERNOULLI
+
+#Binned continuous for Bernoulli
+
+def bin(val):
+    return int(round(val))
+
 
 class Gaussian(object):
 
     def __init__(self, data):
-        self.vector = map(float(data))
-        self.sample_mean = sample_mean()
-        self.sample_variance = sample_variance()
+        self.vector = map(float, data)
+	#CAN WE USE NUMPY?
+        self.sample_mean = np.var(self.vector) #sample_mean()
+        self.sample_variance = np.var(self.vector) #sample_variance()
 
-    def sample_mean(self):
-        return sum(self.vector)/len(self.vector)
 
-    def sample_variance(self):
-        return sum(map(lambda x: (x- self.sample_mean)**2, self.vector))/(len(self.vector) -1)
 
 #function for std dev
-
 #Multinomial: - works well for
 
 #training set
@@ -73,8 +84,8 @@ if __name__ == "__main__":
                 help="type of distribution you want to use")
 
     args = parser.parse_args()
-
     load_data(args.outfile, args.type)
 
 
-
+#Explain thoughts as I do it
+#Naive

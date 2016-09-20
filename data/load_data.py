@@ -331,3 +331,14 @@ if __name__ == "__main__":
 #   http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html - depends on agegroup
 #add gender, age
 # bin age by every 5 years. if you aged out, we can have another feature.
+
+#BIN IRONMAN TIMESo - 40% of time running?
+#Try different performance metrics
+
+#events per year
+#
+# indicator events
+# cross validation
+# shuffle bash script  or shuf
+# get 20% as test set
+# k = 10, iterate with different random splits
