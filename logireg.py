@@ -4,12 +4,13 @@ import matplotlib.pyplot as plt
 
 class logitReg():
     
-    def __init__(self,train_set_x,train_set_y,n_in,n_out):
+    def __init__(self,train_set_x,train_set_y,n_in):
+        #n_in=number of features
         
         self.train_set_x = train_set_x
         self.train_set_y = train_set_y
 
-        self.W = np.asarray(np.random.uniform(0,1e-3,size = (n_in,n_out)))
+        self.W = np.asarray(np.random.uniform(0,1e-3,size = (n_in,1)))
         
     def sig(self,x,W):
         return 1.0/(1.0 + np.exp(-np.dot(x,W)))
