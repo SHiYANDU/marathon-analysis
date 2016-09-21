@@ -23,51 +23,197 @@
 
 import argparse, csv, re
 import numpy as np
+import math
 from collections import Counter
 from datetime import datetime, timedelta
 
-DATA_FILEPATH = 'test_runners.csv'
+DATA_FILEPATH = 'data/t_runners.csv'
 
 def load_data(outfile, class_type):
     with open(DATA_FILEPATH, 'r') as f:
         data = list(csv.reader(f))
 
-    feature_names = data[0]
-    feature_vals = data[1:]
-    feature_matrix = np.asarray[feature_vals]
+    #feature_names = data[0]
+    #feature_vals = data[1:]
+    #feature_matrix = np.asarray[feature_vals]
     continuous = 8
 
+    # choose which features you want
+
+    test = np.asarray(data[1:])
+
+    discrete_classifier(test[:,3:6])
 
     if class_type is "gaussian":
         return 0
-    #RUNNER,AGE,GENDER,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED
     #id, discrete, discrete, discrete, continuous, continuous, continuous, continuous
 
 
-def gaussian_classification(row, feature_to_predict):
-    # for every single, calculate teh prob they run in 2016
-    #Then, the probability distribution of v {\displaystyle v} v given a class c {\displaystyle c} c, p ( x = v | c ) {\displaystyle p(x=v|c)} p(x=v|c), can be computed by plugging v {\displaystyle v} v into the equation for a Normal distribution parameterized by μ c {\displaystyle \mu _{c}} \mu _{c} and σ c 2 {\displaystyle \sigma _{c}^{2}} \sigma^2_c. T
+
+#FUNCTION: make classifier takes the class and puts into both discrete and continuous and then unites them
+
+#Make a classifier class. initialize witha training set, and then use instances with the classify function
 
 
-    return 1 #if they will
 
-#DO BERNOULLI
+def classify(classifier, instance):
 
-#Binned continuous for Bernoulli
+    #run classifier on the instance. return 0 for not in, return 1 if yes
+
+
+    return 0
+
+def make_classifier(features, types):
+
+    type_array = np.asarray(types)
+    classes = np.unique(features[:,0])
+
+    discrete_cols = type_array[type_array == 'discrete']
+    discrete = discrete_classifier(np.column_stack(features[:,0],discrete_cols))
+
+    gaussian_cols = type_array[type_array == 'continuous']
+    gaussian = gaussian_classifier(np.column_stack(features[:,0],gaussian_cols))
+
+    priors = get_priors(features[:,0])
+
+    def classifier(instance):
+        #check to see instance is valid. as in, has same size
+        #get data. pass
+        #get classes
+            res = map(lambda c: priors[c] * discrete[c] * gaussian[c], classes)
+
+
+            #return the class that got the max
+            return max(res)
+
+        #find max
+
+    return classifier
+
+
+class Classifier(object):
+
+    def __init__(self, features, types):
+        type_array = np.asarray(types)
+        classes = np.unique(features[:,0])
+
+
+        priors = get_priors()
+
+        discrete_cols = type_array[type_array == 'discrete']
+        discrete = discrete_classifier(np.column_stack(features[:,0],discrete_cols))
+
+        gaussian_cols = type_array[type_array == 'continuous']
+        gaussian = gaussian_classifier(np.column_stack(features[:,0],gaussian_cols))
+
+
+    def classify(instance):
+
+
+    #FOR EACH CLASS, grab the probabilities given that class from discrete, multiply by product of those given by gaussian
+
+    return 0
+
+
+
+def discrete_classifier(features):
+    classes = np.unique(features[:,0])
+    total_num = len(features[:,0])
+    class_features = {}
+    likelihoods = {}
+
+    priors = {}
+    conditionals = {}
+    #for each class, i.e. y = 0, 1, we get the features where that class is 1
+    for cls in classes:
+        class_features[cls] = features[features[:,0] == cls]
+        #get class likelihood. If discrete, just num over n. If continuous use gaussian distribution
+        #p(x = 1| y=1) is just the sum of all of the features for one of these rows, divided by the total number of features for discrete.
+        #for continuous use the guassian distribution
+        priors[cls] = len(features)/total_num
+
+        for col_num in range(1,np.shape(class_features[cls])[1]):
+            col = (class_features[cls][:,col_num]).astype(int)
+            if str(cls) in conditionals.keys():
+                conditionals[str(cls)].append(len(col[col==int(cls)])/np.shape(col)[0])
+            else:
+                conditionals[str(cls)] = [len(col[col==int(cls)])/np.shape(col)[0]]
+
+    #assign likelihoods to each and choose the most likely
+
+#5 minutes discrete
+
+    def classifier(instance):
+
+        vals = {}
+        for c in classes:
+            #for each class
+            class_probs = []
+            for i in range(0, len(instance)):
+                class_probs.append(numpy.prod(conditionals[c]))
+
+            vals[c] = priors[c] * np.prod(class_probs)
+
+        return vals
+    #return classifier
+
+
+def gaussian_classifier(features):
+    classes = np.unique(features[:,0])
+    total_num = len(features[:,0])
+    class_features = {}
+    likelihoods = {}
+
+    priors = {}
+    conditionals = {}
+    #for each class, i.e. y = 0, 1, we get the features where that class is 1
+    for cls in classes:
+        class_features[cls] = features[features[:,0] == cls]
+        priors[el] = len(features)/total_num
+
+        params = []
+
+        for col_num in range(1,np.shape(class_features[cls])[1]):
+            col = (class_features[cls][:,col_num]).astype(float)
+
+            mean = np.mean(col)
+            variance = np.var(col)
+            params.append((mean,variance))
+
+        conditionals[cls] = params
+
+    def classifier(instance):
+    #assume each feature lines up with each
+        vals = {}
+        for c in classes:
+            #for each class
+            class_probs = []
+            for i in range(0, len(instance)):
+                class_probs.append(gaussian_func(conditionals[c][i][0], conditionals[c][i][1], instance[i]))
+
+
+            #vals[c] = priors[c] * np.prod(class_probs)
+
+            vals[c] = np.prod(class_probs)
+
+        return vals
+
+        #FIND max
+        #not yet
+        #return max(vals.values())
+
+    return classifier
+
+
+def gaussian_func(mean, var, val):
+    return (1/math.sqrt(2*math.pi*(var)))*math.exp((-(val-mean)**2)/(2*(var)))
+
+def discretize(continuous_vector):
+
+    return 0
 
 def bin(val):
     return int(round(val))
-
-
-class Gaussian(object):
-
-    def __init__(self, data):
-        self.vector = map(float, data)
-	#CAN WE USE NUMPY?
-        self.sample_mean = np.var(self.vector) #sample_mean()
-        self.sample_variance = np.var(self.vector) #sample_variance()
-
-
 
 #function for std dev
 #Multinomial: - works well for
@@ -85,6 +231,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     load_data(args.outfile, args.type)
+    print ("Select which features you want")
 
 
 #Explain thoughts as I do it

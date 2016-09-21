@@ -63,8 +63,8 @@ class Run(object):
         if data['time'] != '-1':
             self.finished = True
             time = datetime.strptime(data['time'], '%H:%M:%S')
-            self.time = timedelta(
-                       hours=time.hour, minutes=time.minute, seconds=time.second)
+            self.time = self.get_time(timedelta(
+                       hours=time.hour, minutes=time.minute, seconds=time.second))
 
         self.avg_run_speed = self.get_avg_speed_from_type(type_label)
 
@@ -75,8 +75,23 @@ class Run(object):
         "half marathon": 21.0975,
         "sprint duathlon": 7.5,
         "duathlon":  15,
+        "ironman": 42.220,
+        "half ironman": 21.1, #NOTE a 70.3 is  ahalf marathon# all 70.3 go to half ironman. contains half and ironman, half ironman etc
+        "sprint triathlon": 5,
+        "olympic triathlon": 10,
     }
+    def get_time(self, time_obj):
+        portion_running = 1
+        if self.event_type is 'ironman':
+            portion_running = 0.4
 
+        elif self.event_type is 'half ironman':
+            portion_running = 0.4
+
+        else:
+            portion_running = 1
+
+        return timedelta(seconds=(portion_running*(time_obj.total_seconds())))
     def get_avg_speed_from_type(self, type_label):
     #TODO: are we only going to make this count for marathon distances? I think so
     # http://www.runtri.com/2011/06/how-long-does-it-take-to-finish-ironman.html

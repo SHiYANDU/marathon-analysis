@@ -1,7 +1,7 @@
 #!/bin/bash
 out="Project1_data_shuf.csv"
-sed -n -e 1,8712p Project1_data.csv > temp
-shuf temp > t 
+sed -n -e 2,8712p Project1_data.csv > temp
+shuf temp > $out 
 percent=`echo "scale=0; 8712-(8712*0.2)"| bc -l`
 rounded=`printf "%.0f" $percent`
 echo $rounded
