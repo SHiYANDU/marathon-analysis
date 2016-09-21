@@ -141,8 +141,12 @@ class Runner(object):
             if isinstance(event.date.year,int):
                 timeweight+=(time_to_evaluate-event.date.year)
             else:
-                error+=1
-        return timeweight/(len(self.events)-error)
+                timeweight+=2.5
+                #the error is caused if the date is not correctly parsed for some data,and these are mainly happening in year 2012 2013, so taking 2.5 as an approximation should be harmless
+        if len(self.events)==0:
+            #this case should already have been filtered out anyway,but if it happens take it as a worst case time distance
+            return 3
+        return timeweight/(len(self.events))
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
 
