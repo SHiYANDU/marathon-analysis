@@ -48,30 +48,22 @@ def load_data(outfile, class_type):
         return 0
     #id, discrete, discrete, discrete, continuous, continuous, continuous, continuous
 
+    return data
 
 
 #FUNCTION: make classifier takes the class and puts into both discrete and continuous and then unites them
 
 #Make a classifier class. initialize witha training set, and then use instances with the classify function
 
-
-
-def classify(classifier, instance):
-
-    #run classifier on the instance. return 0 for not in, return 1 if yes
-
-
-    return 0
-
 def make_classifier(features, types):
 
     type_array = np.asarray(types)
     classes = np.unique(features[:,0])
 
-    discrete_cols = type_array[type_array == 'discrete']
+    discrete_cols = features[type_array == 'discrete']
     discrete = discrete_classifier(np.column_stack(features[:,0],discrete_cols))
 
-    gaussian_cols = type_array[type_array == 'continuous']
+    gaussian_cols = features[type_array == 'continuous']
     gaussian = gaussian_classifier(np.column_stack(features[:,0],gaussian_cols))
 
     priors = get_priors(features[:,0])
@@ -79,12 +71,20 @@ def make_classifier(features, types):
     def classifier(instance):
         #check to see instance is valid. as in, has same size
         #get data. pass
+
+        #split instance into continuous and discrete
+        if len(instance) != numpy.shape(features)[1] - 1:
+            print( "INSTANCE NOT RIGHT SIZE. ")
+            print(str(len(instance))+ " is instance size")
+            print(str(numpy.shape(features)[1] - 1)+ " is instance size")
+        #WHERE DO I USE THE INSTANCE?
+        g = gaussian(instance[type_array == 'continuous'])
+        d = discrete(instance[type_array =='discrete'])
+
         #get classes
-            res = map(lambda c: priors[c] * discrete[c] * gaussian[c], classes)
-
-
-            #return the class that got the max
-            return max(res)
+        res = map(lambda c: priors[c] * d[c] * gaussian[c], classes)
+        #return the class that got the max
+        return classes[numpy.argmax(res)]
 
         #find max
 
@@ -94,25 +94,12 @@ def make_classifier(features, types):
 class Classifier(object):
 
     def __init__(self, features, types):
-        type_array = np.asarray(types)
-        classes = np.unique(features[:,0])
-
-
-        priors = get_priors()
-
-        discrete_cols = type_array[type_array == 'discrete']
-        discrete = discrete_classifier(np.column_stack(features[:,0],discrete_cols))
-
-        gaussian_cols = type_array[type_array == 'continuous']
-        gaussian = gaussian_classifier(np.column_stack(features[:,0],gaussian_cols))
-
+        self.a = 0
 
     def classify(instance):
-
-
     #FOR EACH CLASS, grab the probabilities given that class from discrete, multiply by product of those given by gaussian
 
-    return 0
+        return 0
 
 
 
@@ -130,32 +117,60 @@ def discrete_classifier(features):
         #get class likelihood. If discrete, just num over n. If continuous use gaussian distribution
         #p(x = 1| y=1) is just the sum of all of the features for one of these rows, divided by the total number of features for discrete.
         #for continuous use the guassian distribution
-        priors[cls] = len(features)/total_num
+
+        #cond[1] = [num of 1s in 1st column, num of 1s in 2nd, num of 1s in 3]
+        #WRONG
+
+        #cond[0] = [num
+        priors[cls] = float(len(class_features[cls]))/total_num
+        conditionals[cls] = {}
 
         for col_num in range(1,np.shape(class_features[cls])[1]):
             col = (class_features[cls][:,col_num]).astype(int)
-            if str(cls) in conditionals.keys():
-                conditionals[str(cls)].append(len(col[col==int(cls)])/np.shape(col)[0])
-            else:
-                conditionals[str(cls)] = [len(col[col==int(cls)])/np.shape(col)[0]]
+        #    if str(cls) in conditionals.keys():
+            conditionals[str(cls)].append(float(len(col[col==int(cls)]))/np.shape(col)[0])
+            print(cls)
+            print(col_num)
+            print(float(len(col[col==int(cls)])))
 
+        #    else:
+        #        conditionals[str(cls)] = [float(len(col[col==int(cls)]))/np.shape(col)[0]]
+
+
+    print("priors " + str( priors))
+    print (conditionals)
     #assign likelihoods to each and choose the most likely
 
 #5 minutes discrete
 
+    print("going to return a classifier")
     def classifier(instance):
 
         vals = {}
         for c in classes:
+            vals[c] = []
             #for each class
             class_probs = []
             for i in range(0, len(instance)):
-                class_probs.append(numpy.prod(conditionals[c]))
+                #class_probs.append(np.prod(conditionals[c]))
+                #class_probs.append(conditionals[c])
 
-            vals[c] = priors[c] * np.prod(class_probs)
+                #WHERE DO THINGS FIT IN HERE????
+                vals[c].append(conditionals[c][i])
+
+
+            vals[c] = np.prod(vals[c])
+            #vals[c] = priors[c] * np.prod(class_probs)
+            print("CLASS: " + c)
+            #print(class_probs)
+            #vals[c] = np.prod(class_probs)
+            print(vals[c])
 
         return vals
-    #return classifier
+
+    print(type(classifier))
+
+    return classifier
 
 
 def gaussian_classifier(features):
