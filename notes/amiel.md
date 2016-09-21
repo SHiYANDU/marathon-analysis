@@ -129,3 +129,10 @@ Things to note:
 DO NOT USE THESE IN THEIR CURRENT STATE! They utilize what will become the test set.
 Once we have a test set, the ipython session should be re-run to create new scores.
 We should remove events from the indicator races that didn't have a race in 2015. Races in 2012 followed by marathons that year mean nothing to us now.
+
+
+------------
+
+Cross validation with different features
+
+

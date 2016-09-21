@@ -89,7 +89,9 @@ class Runner(object):
         sex = reduce(lambda c, n: n if n in ['M','H','F'] else c, sexs, None)
         return 'M' if sex == 'H' else sex
     
-    def get_avg_dist(self):
+    # added this optional ret parameter, becuase sometime I want 0 to be the 
+    # return value
+    def get_avg_dist(self, ret=None):
 #         get average distance of all running 
         sum=0.0
         non_run_event=0.0
@@ -99,7 +101,7 @@ class Runner(object):
             else:
                 non_run_event+=1
         if sum==0:
-            return None
+            return ret
         else:
             return sum/(len(self.events)-non_run_event)
             
@@ -123,4 +125,16 @@ class Runner(object):
                 error+=1
         return timeweight/(len(self.events)-error)
     
-    
+    def get_avg_speed(self):
+        dist = 0
+        time = 0
+        for e in self.events:
+            if e.finished and e.distance:
+                dist += e.distance
+                time += e.finished
+        if dist == 0 and time == 0:
+            return 0
+        else:
+            return dist / time
+
+
