@@ -1,12 +1,15 @@
+from __future__ import print_function
+
 import csv, itertools
 import numpy as np
 
 from itertools import combinations, chain
+from multiprocessing import Pool
 
 from run import Run
 from runner import Runner
 
-DATA_FILEPATH = 'data/Project1_data.csv'
+DATA_FILEPATH = 'Project1_data_training.csv'
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -18,14 +21,13 @@ def powerset(iterable):
 
 def load_data():
     with open(DATA_FILEPATH, 'r') as f:
-        return map(Runner, list(csv.reader(f))[1:])
+        return map(Runner, csv.reader(f))
 
 
 def is_2015_marathon(event):
     return 'Marathon Oasis' in event.name and \
        event.date.year == 2015 and \
-       event.event_type == 'marathon' and \
-       event.time is not None
+       event.event_type == 'marathon'
 
 
 def has_2015_marathon(runner):
@@ -39,8 +41,14 @@ features_list = {
         'age': lambda r: r.age,
         'sex': lambda r: int(r.sex == 'M'),
         'avg_dist': lambda r: r.get_avg_dist(0),
-        #'timeweight': lambda r: r.get_avg_timeweight(),
+        'timeweight': lambda r: r.get_race_timeweight(),
         'speed': lambda r: r.get_avg_speed(),
+        'speed_sqd': lambda r: r.get_avg_speed()**2,
+        '5k': lambda r: r.avg_5k_speed(),
+        '10k': lambda r: r.avg_10k_speed(),
+        'half_mthn': lambda r: r.avg_half_marathon_speed(),
+        'mthn': lambda r: r.avg_marathon_speed(),
+        'finishing_ratio': lambda r: r.finishing_ratio(),
 }
 
 def features(runner, feature_list):
@@ -94,38 +102,45 @@ def cross_validation(data):
     
     return np.mean(errs)
 
+def test_feature_list(feature_list):
+    print("Testing feature list: {}".format(', '.join(feature_list)),file=sys.stderr)
+    # filter the data on runners who have a data point for the 2015 marathon
+    # as this is our Y. We also want to make sure we have data for all the 
+    # featues and that the montreal marathon isn't their only event
+    filtered_runners = filter(
+            lambda r: has_all_features(r, feature_list), 
+            runners)
+    # get Y and remove it from the data
+    Y = [marathon_2015_times[r.uid] for r in filtered_runners]
+
+    # now build X 
+    X = [features(runner, feature_list) for runner in filtered_runners]
+
+    #split into 10 for 10-fold validation
+    data = zip(Y, X)
+
+    return (feature_list, cross_validation(data)/len(data), len(data))
+
 
 if __name__ == "__main__":
+    import pprint
     runners = filter(has_2015_marathon, load_data())
     marathon_2015_times = {}
     for runner in runners:
         marathon_2015 = next((e for e in runner.events if is_2015_marathon(e)))
-        marathon_2015_times[runner.uid] = marathon_2015.time.seconds
+        if marathon_2015.time:
+            marathon_2015_times[runner.uid] = marathon_2015.time.seconds
+        else:
+            marathon_2015_times[runner.uid] = -1
         del runner.events[runner.events.index(marathon_2015)]
 
     
-    errs = []    
-    for feature_list in powerset(features_list):
-        # filter the data on runners who have a data point for the 2015 marathon
-        # as this is our Y. We also want to make sure we have data for all the 
-        # featues and that the montreal marathon isn't their only event
-        filtered_runners = filter(
-                lambda r: has_all_features(r, feature_list), 
-                runners)
-        # get Y and remove it from the data
-        Y = [marathon_2015_times[r.uid] for r in filtered_runners]
+    p = Pool(4)
 
-        # now build X 
-        X = [features(runner, feature_list) for runner in filtered_runners]
-    
-        #split into 10 for 10-fold validation
-        data = zip(Y, X)
-
-        errs.append((feature_list, cross_validation(data)/len(data), len(data)))
+    errs = p.map(test_feature_list, powerset(features_list)) 
 
     errs.sort(lambda a, b: int(a[1] - b[1]))
 
-    import pprint
 
     pprint.pprint(errs)
 

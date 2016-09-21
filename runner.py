@@ -150,10 +150,11 @@ class Runner(object):
             return 3
         return timeweight/(len(self.events))
     
-    def get_avg_speed(self):
+
+    def speed_for_events(self, func):
         dist = 0
         time = 0
-        for e in self.events:
+        for e in filter(func, self.events):
             if e.finished and e.distance:
                 dist += e.distance
                 time += e.finished
@@ -161,6 +162,33 @@ class Runner(object):
             return 0
         else:
             return dist / time
+        
+    def get_avg_speed(self):
+        # take all events
+        f = lambda r: True
+        return self.speed_for_events(f)
+
+    def avg_5k_speed(self):
+        f = lambda r: r.distance == 5.0
+        return self.speed_for_events(f)
+
+    def avg_10k_speed(self):
+        f = lambda r: r.distance == 10.0
+        return self.speed_for_events(f)
+
+    def avg_half_marathon_speed(self):
+        f = lambda r: r.distance == Run.run_distances['half marathon']
+        return self.speed_for_events(f)
+
+    def avg_marathon_speed(self):
+        f = lambda r: r.distance == Run.run_distances['marathon']
+        return self.speed_for_events(f)
+
+    def finishing_ratio(self):
+        if len(self.events) == 0:
+            return 0
+        return sum(r.finished for r in self.events)/len(self.events)
+
 
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
