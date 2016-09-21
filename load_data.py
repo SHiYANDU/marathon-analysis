@@ -33,6 +33,8 @@ def load_data(outfile, write_runs, write_runners, filters={}):
     if write_runners:
         with open(outfile + '_runners.csv', 'w+') as f:
             # TODO update once more features are added
+
+            #f.write('RUNNER,AGE,GENDER,RAN_2011,RAN_2012,RAN_2013,RAN_2014,RAN_2015,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED\n')
             f.write('RUNNER,GENDER,AGE,EVENT COUNT,AVG_DIST,RUN_RATIO,TIME_WEIGHT\n')
             for runner in data:
                 # don't write runners whose data was all filtered out:
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument('-d','--date', type=str,
                 default='2015-01-01',
                 help="A date to cut off data as a training set YYYY-MM-DD. e.g. 2015-01-01 will not include any running data from after 2015")
-    parser.add_argument('-run','--run_data', help="write run data", 
+    parser.add_argument('-run','--run_data', help="write run data",
             action="store_true")
     parser.add_argument('-runner','--runner_data',help="write runner data",
             action="store_true")
