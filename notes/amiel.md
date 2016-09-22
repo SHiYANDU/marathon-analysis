@@ -142,7 +142,7 @@ Test are as follows:
 1. Base (has -1 for not finishing marathon in Y) 
 2. sex as -1, 1, not 0
 3. subtract means from everything
-4. Subtract mean from everything except age, finishing ratio, timeweight and sex
+4. Subtract mean from everything except finishing ratio, timeweight and sex
 5. Not filtering by feature and placing 0 in that place instead
 6. Not filtering by feature and placing -1 in that place instead
 

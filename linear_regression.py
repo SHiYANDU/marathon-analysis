@@ -3,7 +3,7 @@ from __future__ import print_function
 import csv, itertools, sys
 import numpy as np
 
-
+from datetime import timedelta
 from itertools import combinations, chain
 from multiprocessing import Pool
 
@@ -51,6 +51,7 @@ features_list = {
         'timeweight': lambda r: r.get_race_timeweight(),
         'speed': lambda r: r.get_avg_speed(),
         'speed_sqd': lambda r: r.get_avg_speed()**2,
+        'one_over_speed': lambda r: 0 if r.get_avg_speed() == 0 else 1/r.get_avg_speed(),
         '5k': lambda r: r.avg_5k_speed(),
         '10k': lambda r: r.avg_10k_speed(),
         'half_mthn': lambda r: r.avg_half_marathon_speed(),
@@ -58,7 +59,7 @@ features_list = {
         'finishing_ratio': lambda r: r.finishing_ratio(),
 }
 
-def features(runner, feature_list, default=0):
+def features(runner, feature_list, default=None):
     features = [
             features_list[f](runner) for f in feature_list
     ]
@@ -66,10 +67,6 @@ def features(runner, feature_list, default=0):
     return features
 
 def closed_form(data, l=0):
-    # TODO: assert shapes
-    # takes a feature matrix of the form 
-    #   [ [feature_1 for datum 1, feature_2 for datum 1, ... ], ... ]
-    # l is the regularization constant which defaults to zero
     Y, X = zip(*data)
     N = len(X)
 
@@ -89,7 +86,7 @@ def closed_form(data, l=0):
 def err(w, data):
     # data has the form [ (y, [f1, f2, ...]), ...]
     w = flatten(w.tolist())
-    return sum( (y - sum(map(np.prod, zip(w, row))))**2 for y, row in data) 
+    return sum( (y - sum(map(np.prod, zip(w, row + [1]))))**2 for y, row in data) 
 
 
 def cross_validation(data):
@@ -176,12 +173,12 @@ def validate_feature_combos():
 
 def eval_fit(runner, w, feature_list):
     w = flatten(w.tolist())
-    x = [feature if feature else 0 for feature in features(runner, feature_list)]
+    x = features(runner, feature_list) + [1]
 
     return sum(map(np.prod, zip(w, x)))
 
 
-def test_set_error():
+def set_errors():
     feature_list = (
             '10k',
             'finishing_ratio', 
@@ -197,7 +194,6 @@ def test_set_error():
         ]
 
     w = closed_form(data)
-
     test_runners = filter(has_2015_marathon, load_test_data())
     test_marathon_2015_times = {}
     for runner in test_runners:
@@ -213,9 +209,73 @@ def test_set_error():
             for r in test_runners
         ]
 
-    print(err(w, test_data), len(test_data))
+    print("Training error: ", err(w, data), len(data))
+    print("Validation error: ", err(w, test_data), len(test_data))
       
 
+def make_predictions():
+    feature_list = (
+            '10k',
+            'finishing_ratio', 
+            'half_mthn', 
+            'timeweight', 
+            'age', 
+            'mthn', 
+    )
+    data = [
+            (marathon_2015_times[r.uid], features(r, feature_list)) 
+            for r in runners
+        ]
+
+    # for this we'll use all the data to build our model
+    test_runners = filter(has_2015_marathon, load_test_data())
+    test_marathon_2015_times = {}
+    for runner in test_runners:
+        marathon_2015 = next((e for e in runner.events if is_2015_marathon(e)))
+        if marathon_2015.time:
+            test_marathon_2015_times[runner.uid] = marathon_2015.time.seconds
+        else:
+            test_marathon_2015_times[runner.uid] = -1
+        del runner.events[runner.events.index(marathon_2015)]
+
+
+    test_data = [  
+            (test_marathon_2015_times[r.uid], features(r, feature_list)) 
+            for r in test_runners
+        ]
+
+
+    w = closed_form(data + test_data)
+
+    print(w)
+
+    all_runners = [
+            (str(r.uid), str(timedelta(seconds=int(eval_fit(r, w, feature_list)))))
+            for r in load_data() + load_test_data()
+    ]
+    
+    all_runners.sort(lambda a, b: int(a[0]) - int(b[0]))
+
+    with open('linear_regression_predictions.csv','w+') as f:
+        f.write('\n'.join(map(lambda row: ','.join(row), all_runners)))
+
+
+def pca(X):
+    # find the eigenvectors of the covariance matrix sorted by eigenvalue
+    X = np.matrix([row + [1] for row in X]).T
+
+    cov = X.dot(X.T) 
+    
+    # subtract the mean from each column
+    cov -= cov.mean(0)
+
+    evals, evecs = np.linalg.eigh(cov)
+
+    # the evals are returned in increasing order and we want the 
+    # eigenvec associated with the larged eval, so
+    proj = evecs[-1]
+
+    print(evals)
 
 if __name__ == "__main__":
     import pprint
@@ -229,9 +289,6 @@ if __name__ == "__main__":
             marathon_2015_times[runner.uid] = -1
         del runner.events[runner.events.index(marathon_2015)]
 
-    test_set_error() 
-
     
-
-
+    validate_feature_combos()
 
