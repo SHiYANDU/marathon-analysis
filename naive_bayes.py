@@ -111,33 +111,34 @@ def discrete_classifier(features):
 
     priors = {}
     conditionals = {}
-    #for each class, i.e. y = 0, 1, we get the features where that class is 1
     for cls in classes:
         class_features[cls] = features[features[:,0] == cls]
-        #get class likelihood. If discrete, just num over n. If continuous use gaussian distribution
-        #p(x = 1| y=1) is just the sum of all of the features for one of these rows, divided by the total number of features for discrete.
-        #for continuous use the guassian distribution
 
-        #cond[1] = [num of 1s in 1st column, num of 1s in 2nd, num of 1s in 3]
-        #WRONG
-
-        #cond[0] = [num
         priors[cls] = float(len(class_features[cls]))/total_num
-        conditionals[cls] = {}
+        conditionals[cls] = []
+
+        #conditional[Y] = [array corresponding to columns]
+                                #each element in the array is a dict[class] = p(class| y)
+                                #ie the probability of that class and the feature
 
         for col_num in range(1,np.shape(class_features[cls])[1]):
+
             col = (class_features[cls][:,col_num]).astype(int)
         #    if str(cls) in conditionals.keys():
-            conditionals[str(cls)].append(float(len(col[col==int(cls)]))/np.shape(col)[0])
-            print(cls)
-            print(col_num)
-            print(float(len(col[col==int(cls)])))
+            conditional_col = {}
+            for opt_class in np.unique(col):
+                conditional_col[opt_class] = float(len(col[col==int(opt_class)]))/np.shape(col)[0]
+                #print(cls)
+                #print(col_num)
+                #print(float(len(col[col==int(cls)])))
+
+            conditionals[str(cls)].append(conditional_col)
 
         #    else:
         #        conditionals[str(cls)] = [float(len(col[col==int(cls)]))/np.shape(col)[0]]
 
 
-    print("priors " + str( priors))
+    print("priors " + str( priors) + "/n")
     print (conditionals)
     #assign likelihoods to each and choose the most likely
 
@@ -151,12 +152,12 @@ def discrete_classifier(features):
             vals[c] = []
             #for each class
             class_probs = []
+            print(conditionals)
             for i in range(0, len(instance)):
                 #class_probs.append(np.prod(conditionals[c]))
                 #class_probs.append(conditionals[c])
 
-                #WHERE DO THINGS FIT IN HERE????
-                vals[c].append(conditionals[c][i])
+                vals[c].append(conditionals[(c)][i][int(instance[i])])
 
 
             vals[c] = np.prod(vals[c])
