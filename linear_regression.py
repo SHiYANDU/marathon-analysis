@@ -3,6 +3,7 @@ from __future__ import print_function
 import csv, itertools, sys
 import numpy as np
 
+
 from itertools import combinations, chain
 from multiprocessing import Pool
 
@@ -133,9 +134,8 @@ def test_feature_list(feature_list, subtract_means=False):
 
     return (feature_list, cross_validation(data)/len(data), len(data))
 
-
-if __name__ == "__main__":
-    import pprint
+def plot_each_feature():
+    import matplotlib.pyplot as plt
     runners = filter(has_2015_marathon, load_data())
     marathon_2015_times = {}
     for runner in runners:
@@ -146,13 +146,51 @@ if __name__ == "__main__":
             marathon_2015_times[runner.uid] = -1
         del runner.events[runner.events.index(marathon_2015)]
 
+    for feature, f in features_list.iteritems():
+        data = [(marathon_2015_times[r.uid], [f(r)]) for r in runners if f(r)] 
+        try:
+            w = closed_form(data).T.tolist()[0]
+        except np.linalg.linalg.LinAlgError:
+            print("Feature {} produces a singular matrix".format(feature))
+            continue
+        print(w)
+        fit = lambda x: w[0]*x + w[1]
+        y, x = zip(*data)
+        domain = np.linspace(min(flatten(x)), max(flatten(x)), num=50)
+
+        fig = plt.figure()
+        plt.plot(x, y, '.')
+        plt.plot(domain, fit(domain), '-')
+
+        fig.suptitle('Fit: '+feature, fontsize=20)
+        plt.xlabel(feature)
+        plt.ylabel('2015 finishing time')
+        fig.savefig('plots/{}.jpg'.format(feature))
+        plt.clf()
+        
+
+        
+def validate_feature_combos():
+    import pprint
+    runners = filter(has_2015_marathon, load_data())
+    marathon_2015_times = {}
+    for runner in runners:
+        marathon_2015 = next((e for e in runner.events if is_2015_marathon(e)))
+        if marathon_2015.time:
+            marathon_2015_times[runner.uid] = marathon_2015.time.seconds
+        else:
+            marathon_2015_times[runner.uid] = -1
+        del runner.events[runner.events.index(marathon_2015)]
     
     p = Pool(4)
 
     errs = p.map(test_feature_list, powerset(features_list)) 
-
     errs.sort(lambda a, b: int(a[1] - b[1]))
-
-
     pprint.pprint(errs)
+
+
+
+if __name__ == "__main__":
+   plot_each_feature() 
+
 

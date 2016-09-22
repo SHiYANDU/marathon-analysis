@@ -142,9 +142,12 @@ Test are as follows:
 1. Base (has -1 for not finishing marathon in Y)
 2. sex as -1, 1, not 0
 3. subtract means from everything
+4. Subtract mean from everything except age, finishing ratio, timeweight and sex
 
 
-Plot idea: bar chard of average error ratio for each feature compared to another bar
+plot for each feature individually.
+
+Plot idea: bar chart of average error ratio for each feature compared to another bar
 chart of the ratio of a few select combinations. 
 
 

@@ -157,7 +157,7 @@ class Runner(object):
         for e in filter(func, self.events):
             if e.finished and e.distance:
                 dist += e.distance
-                time += e.finished
+                time += e.time.seconds
         if dist == 0 and time == 0:
             return 0
         else:
