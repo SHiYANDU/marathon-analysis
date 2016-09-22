@@ -139,16 +139,38 @@ parallelized for speed
 
 Test are as follows:
 
-1. Base (has -1 for not finishing marathon in Y)
+1. Base (has -1 for not finishing marathon in Y) 
 2. sex as -1, 1, not 0
 3. subtract means from everything
 4. Subtract mean from everything except age, finishing ratio, timeweight and sex
-
+5. Not filtering by feature and placing 0 in that place instead
+6. Not filtering by feature and placing -1 in that place instead
 
 plot for each feature individually.
 
 Plot idea: bar chart of average error ratio for each feature compared to another bar
 chart of the ratio of a few select combinations. 
+
+
+Decide on the features: 'finishing_ratio', 'half_mthn', 'timeweight', 'age', 'mthn', 'avg_dist'
+
+train new fcn using all folds then evaulate the test error
+
+Next, retrain with everything and then make predictions
+
+if the 0 or -1 approach has signifincantly higher error, it might be a good idea to build a bunch of different models, sort them by error and iterate through until one is found for for which the runner has all features, then use that.
+
+error is about 5% worse with setting features to 0. Will use this for simplicity.
+
+When this is the case, the optimal feature list is
+
+('10k', 'finishing_ratio', 'half_mthn', 'timeweight', 'age', 'mthn')
+
+output of test set error (sum or squared errors, number of items in data set)
+113607133807.0 539
+
+sqrt(sum/num**2)  ->  625. We have an average of about 10 minutes error
+
 
 
 

@@ -1,0 +1,128 @@
+\documentclass{article}
+
+%%%%%%%%%%%%%%%%%
+%    Packages   %
+%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{cancel}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\makeatletter
+\def\amsbb{\use@mathgroup{}\M@U{}\symAMSb}
+\makeatother
+\usepackage{bbold}
+\usepackage{mathabx}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usetikzlibrary{decorations.markings,arrows,decorations.pathreplacing}
+\usetikzlibrary{arrows}
+\usetikzlibrary{automata,positioning}
+\usepackage{mathrsfs}
+\usepackage[top=0.8in, bottom=0.8in, left=0.7in, right=0.7in]{geometry}
+\usepackage{color}
+\usepackage{dsfont}
+\usepackage{bold-extra}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{algorithmic}
+\usepackage[]{algorithm2e} %lined,boxed, linesnumbered, ruled
+\usepackage{listings}
+\usepackage{wrapfig}
+
+%%%%%%%%%%%%%%%%%%
+%      CODE      %
+%%%%%%%%%%%%%%%%%%
+
+% CODE %
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{purple}{HTML}{BF0EB3}
+
+\lstset{frame=tb,
+	language=C,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{purple},
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3
+}
+
+% example custom highlighting
+%\lstset{emph={%  
+%	LOAD, SAVE, string%
+%	},emphstyle={\color{blue}}%
+%}% 
+
+% example DFA drawing
+% \begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto] 
+%    \node[state,initial] (q_0)   {$q_0$}; 
+%    \node[state] (q_1) [above right=of q_0] {$q_1$}; 
+%    \node[state] (q_2) [below right=of q_0] {$q_2$}; 
+%    \node[state,accepting](q_3) [below right=of q_1] {$q_3$};
+%     \path[->] 
+%     (q_0) edge  node {0} (q_1)
+%           edge  node [swap] {1} (q_2)
+%     (q_1) edge  node  {1} (q_3)
+%           edge [loop above] node {0} ()
+%     (q_2) edge  node [swap] {0} (q_3) 
+%           edge [loop below] node {1} ();
+% \end{tikzpicture}
+
+%%%%%%%%%%%%%%%%%
+%   Commands    %
+%%%%%%%%%%%%%%%%%
+
+\newcommand{\q}[1]{%
+\subsection*{Question #1}}
+
+\newcommand{\sq}[1]{\subsubsection*{(#1)}}
+
+\newcommand{\contradiction}{\
+\begin{tikzpicture}[rotate=45,x=0.5ex,y=0.5ex]
+\draw[line width=.15ex] (0,2) -- (3,2) (0,1) -- (3,1) (1,3) -- (1,0) (2,3) -- (2,0);
+\end{tikzpicture}
+}
+
+\newcommand{\qed}{%
+\begin{flushright}
+    $\square$
+\end{flushright}
+
+}
+
+\newcommand{\QED}{%
+\begin{flushright}
+    $\blacksquare$
+\end{flushright}
+
+}
+
+
+\begin{document}
+
+\subsection*{Linear Regression}
+
+
+
+
+
+
+
+\end{document}
+
+
+

@@ -11,6 +11,7 @@ from run import Run
 from runner import Runner
 
 DATA_FILEPATH = 'Project1_data_training.csv'
+TEST_SET_FILEPATH = 'TEST_DATA_DONT_TOUCH/Project1_data_TEST.csv'
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -23,6 +24,11 @@ def powerset(iterable):
 def load_data():
     with open(DATA_FILEPATH, 'r') as f:
         return map(Runner, csv.reader(f))
+
+def load_test_data():
+    with open(TEST_SET_FILEPATH, 'r') as f:
+        return map(Runner, csv.reader(f))
+   
 
 
 def is_2015_marathon(event):
@@ -52,10 +58,11 @@ features_list = {
         'finishing_ratio': lambda r: r.finishing_ratio(),
 }
 
-def features(runner, feature_list):
+def features(runner, feature_list, default=0):
     features = [
             features_list[f](runner) for f in feature_list
     ]
+    features = map(lambda f: [f, default][f is None], features)
     return features
 
 def closed_form(data, l=0):
@@ -136,15 +143,6 @@ def test_feature_list(feature_list, subtract_means=False):
 
 def plot_each_feature():
     import matplotlib.pyplot as plt
-    runners = filter(has_2015_marathon, load_data())
-    marathon_2015_times = {}
-    for runner in runners:
-        marathon_2015 = next((e for e in runner.events if is_2015_marathon(e)))
-        if marathon_2015.time:
-            marathon_2015_times[runner.uid] = marathon_2015.time.seconds
-        else:
-            marathon_2015_times[runner.uid] = -1
-        del runner.events[runner.events.index(marathon_2015)]
 
     for feature, f in features_list.iteritems():
         data = [(marathon_2015_times[r.uid], [f(r)]) for r in runners if f(r)] 
@@ -169,8 +167,57 @@ def plot_each_feature():
         plt.clf()
         
 
-        
+
 def validate_feature_combos():
+    p = Pool(4)
+    errs = p.map(test_feature_list, powerset(features_list)) 
+    errs.sort(lambda a, b: int(a[1] - b[1]))
+    pprint.pprint(errs)
+
+def eval_fit(runner, w, feature_list):
+    w = flatten(w.tolist())
+    x = [feature if feature else 0 for feature in features(runner, feature_list)]
+
+    return sum(map(np.prod, zip(w, x)))
+
+
+def test_set_error():
+    feature_list = (
+            '10k',
+            'finishing_ratio', 
+            'half_mthn', 
+            'timeweight', 
+            'age', 
+            'mthn', 
+    )
+
+    data = [
+            (marathon_2015_times[r.uid], features(r, feature_list)) 
+            for r in runners
+        ]
+
+    w = closed_form(data)
+
+    test_runners = filter(has_2015_marathon, load_test_data())
+    test_marathon_2015_times = {}
+    for runner in test_runners:
+        marathon_2015 = next((e for e in runner.events if is_2015_marathon(e)))
+        if marathon_2015.time:
+            test_marathon_2015_times[runner.uid] = marathon_2015.time.seconds
+        else:
+            test_marathon_2015_times[runner.uid] = -1
+        del runner.events[runner.events.index(marathon_2015)]
+
+    test_data = [  
+            (test_marathon_2015_times[r.uid], features(r, feature_list)) 
+            for r in test_runners
+        ]
+
+    print(err(w, test_data), len(test_data))
+      
+
+
+if __name__ == "__main__":
     import pprint
     runners = filter(has_2015_marathon, load_data())
     marathon_2015_times = {}
@@ -181,16 +228,10 @@ def validate_feature_combos():
         else:
             marathon_2015_times[runner.uid] = -1
         del runner.events[runner.events.index(marathon_2015)]
+
+    test_set_error() 
+
     
-    p = Pool(4)
 
-    errs = p.map(test_feature_list, powerset(features_list)) 
-    errs.sort(lambda a, b: int(a[1] - b[1]))
-    pprint.pprint(errs)
-
-
-
-if __name__ == "__main__":
-   plot_each_feature() 
 
 
