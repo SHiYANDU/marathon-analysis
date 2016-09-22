@@ -138,13 +138,6 @@ def discrete_classifier(features):
         #        conditionals[str(cls)] = [float(len(col[col==int(cls)]))/np.shape(col)[0]]
 
 
-    print("priors " + str( priors) + "/n")
-    print (conditionals)
-    #assign likelihoods to each and choose the most likely
-
-#5 minutes discrete
-
-    print("going to return a classifier")
     def classifier(instance):
 
         vals = {}
@@ -173,7 +166,6 @@ def discrete_classifier(features):
 
     return classifier
 
-
 def gaussian_classifier(features):
     classes = np.unique(features[:,0])
     total_num = len(features[:,0])
@@ -182,47 +174,60 @@ def gaussian_classifier(features):
 
     priors = {}
     conditionals = {}
-    #for each class, i.e. y = 0, 1, we get the features where that class is 1
     for cls in classes:
+        cls = int(cls)
         class_features[cls] = features[features[:,0] == cls]
-        priors[el] = len(features)/total_num
 
-        params = []
+        priors[cls] = float(len(class_features[cls]))/total_num
+        conditionals[cls] = []
+
+        #conditional[Y] = [array corresponding to columns]
+                                #each element in the array is a dict[class] = p(class| y)
+                                #ie the probability of that class and the feature
 
         for col_num in range(1,np.shape(class_features[cls])[1]):
+
             col = (class_features[cls][:,col_num]).astype(float)
+        #    if str(cls) in conditionals.keys():
+            conditional_col = {}
+            params = (float(np.mean(col)), float(np.var(col, ddof=1)))
+            print(conditionals)
 
-            mean = np.mean(col)
-            variance = np.var(col)
-            params.append((mean,variance))
-
-        conditionals[cls] = params
+            conditionals[(cls)].append(params)
 
     def classifier(instance):
-    #assume each feature lines up with each
+
         vals = {}
         for c in classes:
+            vals[c] = []
             #for each class
             class_probs = []
+            print(conditionals)
             for i in range(0, len(instance)):
-                class_probs.append(gaussian_func(conditionals[c][i][0], conditionals[c][i][1], instance[i]))
+                #class_probs.append(np.prod(conditionals[c]))
+                #class_probs.append(conditionals[c])
 
+                vals[c].append(gaussian_func(conditionals[c][i][0], conditionals[c][i][1] ,(float(instance[i]))))
 
+            vals[c] = np.prod(vals[c])
             #vals[c] = priors[c] * np.prod(class_probs)
-
-            vals[c] = np.prod(class_probs)
+            #print("CLASS: " + c)
+            #print(class_probs)
+            #vals[c] = np.prod(class_probs)
+            print(vals[c])
 
         return vals
-
-        #FIND max
-        #not yet
-        #return max(vals.values())
-
+    print(type(classifier))
     return classifier
 
 
+
+
 def gaussian_func(mean, var, val):
-    return (1/math.sqrt(2*math.pi*(var)))*math.exp((-(val-mean)**2)/(2*(var)))
+    print(val)
+    print(mean)
+    print(var)
+    return (float(1)/math.sqrt(2*math.pi*(var)))*math.exp((-(val-mean)**2)/(2*(var)))
 
 def discretize(continuous_vector):
 
