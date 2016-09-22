@@ -135,4 +135,17 @@ We should remove events from the indicator races that didn't have a race in 2015
 
 Cross validation with different features
 
+parallelized for speed
+
+Test are as follows:
+
+1. Base (has -1 for not finishing marathon in Y)
+2. sex as -1, 1, not 0
+3. subtract means from everything
+
+
+Plot idea: bar chard of average error ratio for each feature compared to another bar
+chart of the ratio of a few select combinations. 
+
+
 

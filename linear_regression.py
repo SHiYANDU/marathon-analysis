@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-import csv, itertools
+import csv, itertools, sys
 import numpy as np
 
 from itertools import combinations, chain
@@ -102,7 +102,7 @@ def cross_validation(data):
     
     return np.mean(errs)
 
-def test_feature_list(feature_list):
+def test_feature_list(feature_list, subtract_means=False):
     print("Testing feature list: {}".format(', '.join(feature_list)),file=sys.stderr)
     # filter the data on runners who have a data point for the 2015 marathon
     # as this is our Y. We also want to make sure we have data for all the 
@@ -115,6 +115,18 @@ def test_feature_list(feature_list):
 
     # now build X 
     X = [features(runner, feature_list) for runner in filtered_runners]
+
+    if subtract_means:
+        # get the mean for each column
+        means = map(np.mean, zip(*X))
+        
+        no_mean = ['age', 'finishing_ratio', 'timeweight', 'sex']
+    
+        for item in no_mean:
+            if item in feature_list:
+                means[feature_list.index(item)] = 0
+    
+        X = [np.subtract(row, means).tolist() for row in X]
 
     #split into 10 for 10-fold validation
     data = zip(Y, X)
