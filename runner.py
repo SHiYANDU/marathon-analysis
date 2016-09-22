@@ -115,9 +115,11 @@ class Runner(object):
         # make sure we're not picking up a 'N' from NO AGE, or something
         sex = reduce(lambda c, n: n if n in ['M','H','F'] else c, sexs, None)
         return 'M' if sex == 'H' else sex
-
-    def get_avg_dist(self):
-#         get average distance of all running
+    
+    # added this optional ret parameter, becuase sometime I want 0 to be the 
+    # return value
+    def get_avg_dist(self, ret=None):
+#         get average distance of all running 
         sum=0.0
         non_run_event=0.0
         for event in self.events:
@@ -126,7 +128,7 @@ class Runner(object):
             else:
                 non_run_event+=1
         if sum==0:
-            return None
+            return ret
         else:
             return sum/(len(self.events)-non_run_event)
 
@@ -147,8 +149,53 @@ class Runner(object):
             if isinstance(event.date.year,int):
                 timeweight+=(time_to_evaluate-event.date.year)
             else:
-                error+=1
-        return timeweight/(len(self.events)-error)
+                timeweight+=2.5
+                #the error is caused if the date is not correctly parsed for some data,and these are mainly happening in year 2012 2013, so taking 2.5 as an approximation should be harmless
+        if len(self.events)==0:
+            #this case should already have been filtered out anyway,but if it happens take it as a worst case time distance
+            return 3
+        return timeweight/(len(self.events))
+    
+
+    def speed_for_events(self, func):
+        dist = 0
+        time = 0
+        for e in filter(func, self.events):
+            if e.finished and e.distance:
+                dist += e.distance
+                time += e.time.seconds
+        if dist == 0 and time == 0:
+            return 0
+        else:
+            return dist / time
+        
+    def get_avg_speed(self):
+        # take all events
+        f = lambda r: True
+        return self.speed_for_events(f)
+
+    def avg_5k_speed(self):
+        f = lambda r: r.distance == 5.0
+        return self.speed_for_events(f)
+
+    def avg_10k_speed(self):
+        f = lambda r: r.distance == 10.0
+        return self.speed_for_events(f)
+
+    def avg_half_marathon_speed(self):
+        f = lambda r: r.distance == Run.run_distances['half marathon']
+        return self.speed_for_events(f)
+
+    def avg_marathon_speed(self):
+        f = lambda r: r.distance == Run.run_distances['marathon']
+        return self.speed_for_events(f)
+
+    def finishing_ratio(self):
+        if len(self.events) == 0:
+            return 0
+        return sum(r.finished for r in self.events)/len(self.events)
+
+
     def __repr__(self):
         return "<Runner: {uid}>".format(**self.__dict__)
 
