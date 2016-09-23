@@ -123,7 +123,7 @@ class Runner(object):
         sum=0.0
         non_run_event=0.0
         for event in self.events:
-            if isinstance(event.distance,float):
+            if isinstance(event.distance,float) and event.distance!=-1:
                 sum+=event.distance
             else:
                 non_run_event+=1
