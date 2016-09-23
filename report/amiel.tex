@@ -146,10 +146,31 @@ are included in the training set). However, we did not find a simple way to coun
 %In order to visually evaluate our performace, we did a principal component analysis on the data.
 %By finding the eigen
 
-See tables %TODO
-below where we show a random selection of runners from both our training set and validation set
-and compare their running times to our predicted running times. 
+See Table~\ref{tbl:predtrain} and Table~\ref{tbl:predvalid} where we show a random selection of 
+runners from both our training set and validation set and compare their running times to our predicted running times. 
 
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{| l | l | l |}
+        \hline
+        {\em Runner ID} & {\em Predicted Time} & {\em Actual Time}  \\ \hline
+        0 & 0 & 0  \\ \hline
+    \end{tabular}
+    \caption{Sample predictions for the training set}
+    \label{tbl:predtrain}
+\end{table}
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{| l | l | l |}
+        \hline
+        {\em Runner ID} & {\em Predicted Time} & {\em Actual Time}  \\ \hline
+        0 & 0 & 0  \\ \hline
+    \end{tabular}
+    \caption{Sample predictions for the validation set}
+    \label{tbl:predvalid}
+\end{table}
 
 
 
@@ -168,21 +189,21 @@ the mean from the finishing ratio, sex, or timeweight).
 We chose the method which yielded the best results in cross validation. 
 
 In the event that a runner was missing data for one or more features, we were faced with a choice of either excluding the
-runner for the training set, or placing a $0$ (or $-1$) in the place of said feature. The results were marginally better (see the table below) when 
+runner for the training set, or placing a $0$ (or $-1$) in the place of said feature. The results were marginally better (see the Table~\ref{tbl:avgerrs}) when 
 the runner was excluded from training set, which brought about the idea for a possible improvment.
 
-\begin{figure}
+\begin{table}[ht!]
     \centering
     \begin{tabular}{| l | l |}
         \hline
         {\em Method} & {\em Average Error (seconds)}  \\ \hline
-        Runners without features & {\em Average Error}  \\ \hline
-        {\em Method} & {\em Average Error}  \\ \hline
-        {\em Method} & {\em Average Error}  \\ \hline
-        $q_{2a}$ & $\{q_{2a}\}$ & $\{q_{2a}\}$ & $\{q_{2a}\}$& $\{q_{2a}\}$& $\emptyset$ \\
-        \hline
+        Runners without features filtered &   \\ \hline
+        0 inserted for default when a feature is missing &   \\ \hline
+        -1 inserted for default when a feature is missing &  \\ \hline
     \end{tabular}
-    \caption{
+    \caption{Average errors for different strategies}
+    \label{tbl:avgerrs}
+\end{table}
 
 
 Instead of having one linear function for a selected set of features, why not store the function for all combinations
@@ -205,17 +226,36 @@ we decided against this approach.
 
 
 \subsection*{Appendix A}
-%TODO
+
+Some sample plots of regression done on individual features.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\textwidth]{half_mthn.jpg}
+\caption{Half marathon time seems to be a good indicator on it's own}
+\label{fig:halfmthntime}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=0.8\textwidth]{finishing_ratio.jpg}
+\caption{The trend in finishing ratio is less clear}
+\label{fig:frtime}
+\end{figure}
 
 \subsection*{Appendix B}
-%TODO
+
+A table of average errors for different feature combinations
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{| l | l |}
+        \hline
+        {\em Features} & {\em Average Error (seconds)}  \\ \hline
+    \end{tabular}
+    \caption{Average errors for different strategies}
+    \label{tbl:avgerrs}
+\end{table}
 
 \end{document}
-
-%\begin{figure}
-%\centering
-%\includegraphics[width=0.8\textwidth]{.png}
-%\caption{}
-%\label{}
-%\end{figure}
 
