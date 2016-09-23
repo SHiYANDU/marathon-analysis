@@ -10,7 +10,7 @@ from run import Run
 from runner import Runner
 
 DATA_DIR = 'data'
-DATA_FILEPATH = 'Project1_data.csv'
+DATA_FILEPATH = 'Project1_data_training.csv'
 
 def load_data(outfile, write_runs, write_runners, filters={}):
     with open(os.path.join(DATA_DIR, DATA_FILEPATH), 'r') as f:
@@ -35,7 +35,8 @@ def load_data(outfile, write_runs, write_runners, filters={}):
             # TODO update once more features are added
 
             #f.write('RUNNER,AGE,GENDER,RAN_2011,RAN_2012,RAN_2013,RAN_2014,RAN_2015,EVENT COUNT, AVG DISTANCE, TOTAL DISTANCE, PERFORMANCE, AVG SPEED\n')
-            f.write('RUNNER,GENDER,AGE,EVENT COUNT,AVG_DIST,RUN_RATIO,TIME_WEIGHT\n')
+
+            f.write('RUNNER,GENDER,AGE,RAN 2011,RAN 2012,RAN 2013,RAN 2014,RAN 2015,EVENT COUNT,AVG_DIST,RUN_RATIO,TIME_WEIGHT,TOTAL DISTANCE,PERFORMANCE,AVG SPEED\n')
             for runner in data:
                 # don't write runners whose data was all filtered out:
                 if len(runner.events) > 0:

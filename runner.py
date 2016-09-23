@@ -69,7 +69,13 @@ class Runner(object):
 
 
         self.age = self.get_age()
-        self.sex = self.get_sex()
+        sex =  self.get_sex()
+        if sex is 'F':
+            self.sex = 1
+        elif sex is 'M':
+            self.sex = 0
+        elif sex is None:
+            self.sex = -1
 
 
     def performance_function(self, element):
@@ -194,7 +200,7 @@ class Runner(object):
         return "<Runner: {uid}>".format(**self.__dict__)
 
     def __str__(self):
-        return '{uid},{sex},{age},{event_count},{avg_dist},{run_ratio},{time_weight}'.format(
+        return '{uid},{sex},{age},{ran_2011},{ran_2012},{ran_2013},{ran_2014},{ran_2015},{event_count},{avg_dist},{run_ratio},{time_weight},{tot_distance},{perf},{avg_speed}'.format(
                 uid=self.uid,
                 sex=self.sex,
                 age=self.age,
