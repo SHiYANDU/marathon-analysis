@@ -1,0 +1,4 @@
+1.To perform logistic regression, run logireg_exec.py (python logireg_exec.py)
+2.The training data, test data and project data(for prediction) are loaded by 3 methods, they should be placed at the same directory with logireg_exec.py by method definition, if these data are placed in other folder, the path need to be changed
+3.The program read project data with header row then drop it, as it does not keep a record for the runner's id, the data set should not be modified for the ordering to be correct
+4.The program write the id and prediction in order to the file logistic_result.csv. This is a file with 2 column and the second column is the prediction. This is to be merged to the predictions.csv file.
